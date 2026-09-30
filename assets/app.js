@@ -53,7 +53,34 @@
       : k === "noanswer" ? "badge-bad"
         : k === "escalated" ? "badge-warn" : "badge-quiet";
 
-  const sipHref = v => "sip:" + String(v).replace(/[^\d+]/g, "");
+  /* Dialling comes from config.php via the bootstrap, with these as the
+     defaults for the moment before it has loaded — and for the import parser,
+     which normalises numbers from a spreadsheet the same way. */
+  const DIAL_FALLBACK = { scheme: "sip", domain: "", countryCode: "27" };
+  const dial = () => (S && S.dial) ? S.dial : DIAL_FALLBACK;
+
+  /* MicroSIP registers the sip: scheme on Windows, so this is what makes a
+     click ring the desk phone. An empty scheme turns dialling off and numbers
+     render as plain text. */
+  const sipHref = v => {
+    const d = dial();
+    if (!d.scheme) return "";
+    const num = String(v).replace(/[^\d+]/g, "");
+    return d.scheme + ":" + num + (d.domain ? "@" + d.domain : "");
+  };
+
+  const canDial = () => !!dial().scheme;
+
+  /* One number, as a link to the softphone or as plain text when dialling is
+     turned off. An anchor with an empty href reloads the page, so the choice
+     has to be made here rather than by letting sipHref return "". */
+  function phoneHTML(value) {
+    if (!value) return "";
+    const shown = esc(formatPhone(value));
+    if (!canDial()) return '<span class="phone-flat">' + shown + "</span>";
+    return '<a class="phone" href="' + esc(sipHref(value)) + '" data-dial="' +
+      esc(value) + '">' + shown + "</a>";
+  }
 
   /* Numbers arrive as "082 123 4567", "+27 82 123 4567", "27821234567" and
      "(082) 123-4567" — the same person, four ways. Stored as E.164 so that a
@@ -62,7 +89,7 @@
      Anything not recognisable as a local or international number is kept
      exactly as typed: a four-digit extension or a switchboard code is not
      improved by guessing a country onto the front of it. */
-  const DIAL_CC = "27";                 // South Africa; change for another country
+  const DIAL_CC = () => dial().countryCode;
 
   function normalisePhone(raw) {
     const s = String(raw == null ? "" : raw).trim();
@@ -73,10 +100,11 @@
 
     if (kept.charAt(0) === "+") return "+" + kept.slice(1).replace(/\D/g, "");
 
+    const cc = DIAL_CC();
     const d = kept.replace(/\D/g, "");
     if (d.slice(0, 2) === "00") return "+" + d.slice(2);
-    if (d.slice(0, DIAL_CC.length) === DIAL_CC && d.length === DIAL_CC.length + 9) return "+" + d;
-    if (d.charAt(0) === "0" && d.length === 10) return "+" + DIAL_CC + d.slice(1);
+    if (d.slice(0, cc.length) === cc && d.length === cc.length + 9) return "+" + d;
+    if (d.charAt(0) === "0" && d.length === 10) return "+" + cc + d.slice(1);
 
     return s;
   }
@@ -85,7 +113,7 @@
      anything else is shown as stored rather than chopped into the wrong shape. */
   function formatPhone(v) {
     const s = String(v == null ? "" : v);
-    const prefix = "+" + DIAL_CC;
+    const prefix = "+" + DIAL_CC();
     if (s.slice(0, prefix.length) !== prefix) return s;
     const n = s.slice(prefix.length);
     if (n.length !== 9 || /\D/.test(n)) return s;
@@ -314,8 +342,7 @@
     if (!nums.length) return '<span class="text-muted">No number on file</span>';
     return nums.map(c => c.kind === "email"
       ? '<a class="phone" href="mailto:' + esc(c.value) + '">' + esc(c.value) + "</a>"
-      : '<a class="phone" href="' + esc(sipHref(c.value)) + '" data-dial="' +
-        esc(c.value) + '">' + esc(formatPhone(c.value)) + "</a>").join("");
+      : phoneHTML(c.value)).join("");
   }
 
   function dutyHTML(d) {
@@ -487,9 +514,7 @@
             "<td>" + esc(p.role || "") + "</td>" +
             "<td>" + esc(p.department || "") + "</td>" +
             "<td>" + esc(p.site || "") + "</td>" +
-            '<td class="mono nowrap">' + (p.phone
-              ? '<a class="phone" href="' + esc(sipHref(p.phone)) + '" data-dial="' +
-                esc(p.phone) + '">' + esc(formatPhone(p.phone)) + "</a>" : "") + "</td>" +
+            '<td class="mono nowrap">' + phoneHTML(p.phone) + "</td>" +
             "<td>" + esc(p.email || "") + "</td>" +
             "<td>" + (d ? '<span class="badge badge-' + esc(d.type) + '">' +
               (d.type === "standby" ? "Standby" : "On site") + "</span>"
@@ -2185,7 +2210,7 @@
         "<b>" + p.add.length + "</b> to add, <b>" + p.update.length + "</b> to update" +
         (p.sites.size ? ", <b>" + p.sites.size + "</b> new site(s)" : "") +
         (p.skipped ? ", " + p.skipped + " row(s) skipped with no name" : "") + "." +
-        (p.tidied ? "<br>" + p.tidied + " phone number(s) tidied to +" + DIAL_CC +
+        (p.tidied ? "<br>" + p.tidied + " phone number(s) tidied to +" + DIAL_CC() +
           " form." : "") +
       "</div>" +
       (sample.length ? '<div class="table-wrap"><table><thead><tr>' +
@@ -2535,10 +2560,13 @@
     }
   });
 
-  /* Ring through MicroSip, falling back to the clipboard if nothing took the
-     number. 1.5s so the browser's "Open MicroSip?" prompt has time to be
-     answered, and hasFocus() catches the case where it never blurred us. */
+  /* Ring through the softphone — MicroSIP, on the sip: scheme it registers on
+     Windows — falling back to the clipboard if nothing took the number. 1.5s
+     so the browser's "Open MicroSIP?" prompt has time to be answered, and
+     hasFocus() catches the case where it never blurred us. */
   function armDial(num) {
+    const app = dial().scheme === "sip" ? "MicroSIP" : "The dialler";
+
     let handedOff = false;
     const note = () => { handedOff = true; };
     window.addEventListener("blur", note);
@@ -2548,9 +2576,17 @@
       window.removeEventListener("blur", note);
       document.removeEventListener("visibilitychange", note);
       if (handedOff || !document.hasFocus()) return;
+
+      /* navigator.clipboard is undefined on plain HTTP, so this has to be
+         checked rather than relied on to reject — the number is still worth
+         showing when it cannot be copied. */
+      if (!navigator.clipboard || !navigator.clipboard.writeText) {
+        toast(app + " did not open. The number is " + num + ".");
+        return;
+      }
       navigator.clipboard.writeText(num).then(
-        () => toast("MicroSip did not open. " + num + " copied instead."),
-        () => toast("MicroSip did not open."));
+        () => toast(app + " did not open. " + num + " copied instead."),
+        () => toast(app + " did not open. The number is " + num + "."));
     }, 1500);
   }
 

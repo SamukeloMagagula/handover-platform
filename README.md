@@ -344,6 +344,27 @@ GET api.php?action=oncall&day=2026-09-10
 GET api.php?action=ical&key=…
 ```
 
+## Dialling
+
+Clicking a number hands it to a softphone rather than doing anything itself.
+`dial_scheme` in `config.php` decides which: `sip` for MicroSIP, which
+registers that scheme on Windows, and also what Zoiper and Bria use; `tel` for
+whatever the machine has registered; `callto` for older Skype for Business;
+blank turns dialling off and numbers render as plain text.
+
+The page cannot tell whether the handler actually opened — no browser reports
+that back. So it watches for the window losing focus, and if nothing has
+happened after 1.5 seconds it copies the number to the clipboard and says so.
+That is why a number still clicks usefully on a machine with no softphone.
+
+`dial_domain` is appended as `user@host`, for pinning calls to one PBX; leave
+it blank to dial through MicroSIP's active account. It is ignored for `tel`
+and `callto`, which take a bare number.
+
+`dial_country_code` is what turns `082 123 4567` into `+27821234567` on the
+way into the database, so a comparison, a dedupe and a dial all agree about
+what the number is. It also drives the grouping the Directory displays.
+
 ## Licence
 
 MIT — see [LICENSE](LICENSE). Use it, change it, ship it; keep the copyright

@@ -119,6 +119,32 @@ return [
     // host - set it explicitly there.
     'app_url' => '',
 
+    // --- dialling ---
+
+    // Clicking a number hands it to a softphone. MicroSIP registers the sip:
+    // scheme on Windows, so 'sip' is what makes a click ring the desk phone.
+    //
+    //   'sip'     MicroSIP, Zoiper, Bria and most desk softphones
+    //   'tel'     whatever the machine has registered - Teams, Skype, a mobile
+    //   'callto'  older Skype for Business estates
+    //   ''        off: numbers render as plain text, nothing is clickable
+    //
+    // The page cannot tell whether the handler opened, so after 1.5 seconds
+    // without losing focus it copies the number to the clipboard and says so.
+    'dial_scheme' => 'sip',
+
+    // Appended as user@domain. MicroSIP dials a bare number through whichever
+    // account is active, which is usually what you want, so leave this blank
+    // unless calls have to be pinned to one PBX:
+    //
+    //   'pbx.example.com'  ->  sip:0821234567@pbx.example.com
+    'dial_domain' => '',
+
+    // Country code for turning "082 123 4567" into +27821234567 on the way
+    // into the database, so a comparison, a dedupe and a dial all agree about
+    // what the number is. Digits only, no +.
+    'dial_country_code' => '27',
+
     // --- notifications, used by bin/notify.php ---
 
     // Both optional; blank skips that channel. teams_webhook comes from

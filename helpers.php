@@ -289,6 +289,12 @@ function roster_state(PDO $pdo): array
 
         'lastCaller' => get_meta($pdo, 'last_caller'),
         'teamFeed'   => get_meta($pdo, 'team_feed_key'),
+
+        /* How a clicked number reaches a softphone, and what country to assume
+           for a local one. Sent to the browser rather than hard-coded in the
+           JavaScript so a different country or a different softphone is a
+           config change, not an edit to a 90KB file. */
+        'dial'       => dial_settings(),
     ];
 }
 
@@ -441,6 +447,35 @@ function leave_overlaps(PDO $pdo, string $personId, string $from, string $to): b
    server's MAC address, so one key tells you roughly what the next will be.
    For an id that is fine. For a value the README calls a password, and which
    authorises reading somebody's movements for a year either way, it is not. */
+/* The softphone handoff, as the browser needs it.
+
+   Only schemes a browser will actually hand to an external application are
+   allowed through: anything else here would put an unknown scheme into an
+   href, and a typo would silently produce dead links rather than an error. */
+function dial_settings(): array
+{
+    $cfg    = app_config();
+    $scheme = strtolower(trim((string) ($cfg['dial_scheme'] ?? 'sip')));
+
+    if (!in_array($scheme, ['sip', 'tel', 'callto', ''], true)) {
+        error_log('callbook: unknown dial_scheme "' . $scheme . '", falling back to sip');
+        $scheme = 'sip';
+    }
+
+    $cc = preg_replace('/\D/', '', (string) ($cfg['dial_country_code'] ?? '27')) ?? '27';
+
+    return [
+        'scheme'      => $scheme,
+        /* A domain only means anything to sip:. tel: and callto: take a bare
+           number, and appending @host to either produces a URI no handler
+           will accept. */
+        'domain'      => $scheme === 'sip'
+            ? clean_string($cfg['dial_domain'] ?? '', 190)
+            : '',
+        'countryCode' => $cc === '' ? '27' : $cc,
+    ];
+}
+
 function new_feed_key(): string
 {
     return bin2hex(random_bytes(16));

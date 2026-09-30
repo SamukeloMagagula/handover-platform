@@ -520,6 +520,16 @@ body.auth-page { display: flex; align-items: center; justify-content: center; mi
 }
 .phone:hover { border-bottom-color: var(--red); color: var(--red); }
 
+/* The same number with dial_scheme turned off: same typeface and alignment so
+   the columns still line up, but no underline and no hover — nothing here is
+   clickable, and it should not look as though it is. */
+.phone-flat {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-base);
+  letter-spacing: -0.01em;
+}
+
 .empty { padding: var(--s8) var(--s4); text-align: center; color: var(--muted); font-size: var(--text-sm); }
 
 /* ==========================================================================
