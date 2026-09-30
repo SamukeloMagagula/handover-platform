@@ -343,3 +343,8 @@ GET api.php?action=oncall
 GET api.php?action=oncall&day=2026-09-10
 GET api.php?action=ical&key=…
 ```
+
+## Licence
+
+MIT — see [LICENSE](LICENSE). Use it, change it, ship it; keep the copyright
+notice and expect no warranty.
