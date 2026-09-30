@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in - Call Book</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="assets/style.css">
+  <meta name="theme-color" content="#111214">
+</head>
+<body class="auth-page">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <h1 class="wordmark">
+        <span class="wm-name">CALL BOOK</span>
+        <span class="wm-rule" aria-hidden="true"></span>
+        <span class="wm-sub">ON-CALL ROSTER</span>
+      </h1>
+      <p class="auth-subheading">Sign in</p>
+    </div>
+
+    <div class="auth-body">
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" data-mode="login">Sign in</button>
+        <button type="button" class="auth-tab" data-mode="signup">Create account</button>
+      </div>
+
+      <div class="alert alert-success" id="auth-notice" hidden></div>
+      <div class="alert alert-error" id="auth-error" hidden></div>
+
+      <form class="auth-form" id="form-login">
+        <label>Email<input type="email" name="email" placeholder="you@example.com" autocomplete="username" required></label>
+        <label>Password<input type="password" name="password" placeholder="••••••••" autocomplete="current-password" required></label>
+        <button type="submit">Sign in</button>
+        <p class="auth-hint" id="forgot-line" hidden>
+          <a href="forgot.html">Forgotten your password?</a>
+        </p>
+      </form>
+
+      <!-- The password was right; the second factor is outstanding. Shown
+           instead of the sign-in form, never beside it: nothing here says
+           anything about the account until the code is right too. -->
+      <form class="auth-form" id="form-mfa" hidden>
+        <p class="auth-lead">Enter the 6-digit code from your authenticator app.</p>
+        <label>Code
+          <input type="text" name="code" id="mfa-code" class="mono" inputmode="numeric"
+                 autocomplete="one-time-code" maxlength="14" placeholder="000000" required>
+        </label>
+        <button type="submit">Verify</button>
+        <p class="auth-hint">Lost your phone? Enter one of your recovery codes instead, or
+           ask a superadmin to reset your authenticator.</p>
+        <p class="auth-hint"><a href="login.html">Sign in as someone else</a></p>
+      </form>
+
+      <!-- First sign-in on this account: there is no authenticator yet, and
+           no way past this page without setting one up. -->
+      <form class="auth-form" id="form-enrol" hidden>
+        <p class="auth-lead">Every sign-in needs a code from an authenticator app as well as
+           your password. Set one up for <strong id="enrol-who"></strong>:</p>
+        <ol class="mfa-steps">
+          <li>Open Google Authenticator, Microsoft Authenticator, or a similar app, and
+              add an account.</li>
+          <li>Scan this code:
+            <div class="mfa-qr" id="enrol-qr" role="img"
+                 aria-label="QR code for your authenticator app"></div>
+            Can't scan? Choose "enter a setup key" and type:
+            <code class="mfa-key" id="enrol-secret"></code>
+          </li>
+          <li>Enter the 6-digit code the app now shows.</li>
+        </ol>
+        <label>Code
+          <input type="text" name="code" id="enrol-code" class="mono" inputmode="numeric"
+                 autocomplete="one-time-code" maxlength="6" placeholder="000000" required>
+        </label>
+        <button type="submit">Finish setup</button>
+        <p class="auth-hint"><a href="login.html">Cancel</a></p>
+      </form>
+
+      <!-- Shown once, immediately after enrolment, before the roster. -->
+      <div id="recovery" hidden>
+        <div class="alert alert-warn">These are shown once. Print them, or put them
+          somewhere you can reach without your phone. Each one works a single time.</div>
+        <p>If your phone is lost or wiped, a recovery code is how you sign in. Without one,
+           a superadmin has to reset your authenticator before you can get back in.</p>
+        <div class="recovery-codes mono" id="recovery-codes"></div>
+        <button type="button" id="recovery-done">I have saved them — continue</button>
+      </div>
+
+      <form class="auth-form" id="form-signup" hidden>
+        <label>Full name<input type="text" name="name" placeholder="Jane Doe" autocomplete="name" required></label>
+        <label>Email<input type="email" name="email" placeholder="you@example.com" autocomplete="username" required></label>
+        <label>Password
+          <input type="password" name="password" id="reg-password" placeholder="••••••••" autocomplete="new-password" minlength="10" required>
+        </label>
+        <ul class="pw-reqs" id="pw-reqs" aria-live="polite">
+          <li data-req="len">At least 10 characters</li>
+          <li data-req="upper">An uppercase letter</li>
+          <li data-req="lower">A lowercase letter</li>
+          <li data-req="number">A number</li>
+          <li data-req="special">A special character</li>
+        </ul>
+        <label>Confirm password
+          <input type="password" name="confirm" id="reg-confirm" placeholder="••••••••" autocomplete="new-password" minlength="10" required>
+        </label>
+        <p class="pw-match auth-hint" id="pw-match" hidden></p>
+        <button type="submit">Create account</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="assets/api.js"></script>
+  <script src="assets/qr.js"></script>
+  <script src="assets/login.js"></script>
+</body>
+</html>

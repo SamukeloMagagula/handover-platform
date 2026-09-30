@@ -1,0 +1,132 @@
+<?php
+// Database connection settings.
+// Copy this file to config.php and fill it in - do not commit real
+// production credentials to version control.
+//
+//   cp config.php.example config.php
+
+return [
+    'db_host' => '127.0.0.1',
+    'db_port' => 3306,
+    'db_name' => 'callbook',
+    'db_user' => 'callbook',
+    'db_pass' => 'change-this-password',
+
+    // Permanent superadmins, checked on every request. A match gets every
+    // capability regardless of the role stored against it, and the Accounts
+    // tab shows that role as fixed rather than editable.
+    //
+    // Either form works:
+    //   'owner@example.com'  exact address
+    //   'owner'              the name before the @, on any domain
+    //
+    // The account must already exist - this raises an existing account, it
+    // does not create one. This is the way back in if the users table ends up
+    // with no administrator, which is why it lives in a file that needs
+    // server access to edit.
+    'super_admins' => [],
+
+    // Self-signup: login.html's "Create account" tab. Off hides the tab and
+    // makes the server refuse the action. Self-registered accounts land as
+    // 'viewer' - read-only until a superadmin promotes them.
+    // Off by default: accounts are issued by an administrator unless you say
+    // otherwise, and turning this on without a signup_domain opens the door.
+    'allow_signup' => false,
+
+    // Restrict self-signup to this email domain, e.g. 'example.com'. BLANK
+    // MEANS ANY EMAIL MAY REGISTER - only do that on a closed network.
+    'signup_domain' => '',
+
+    // --- transport ---
+
+    // Send plain HTTP to the HTTPS address. Belongs on in production: without
+    // TLS the password and session cookie cross the network readable.
+    // false ONLY on a server with no certificate, or every request redirects
+    // to a port nothing is answering on.
+    'force_https' => true,
+
+    // Only true behind a real proxy terminating TLS. X-Forwarded-Proto can be
+    // sent by anyone, so without one a plain request can claim to be secure.
+    'behind_proxy' => false,
+
+    // Which addresses are allowed to speak for somebody else. Only consulted
+    // when behind_proxy is on, and it governs two things: whether
+    // X-Forwarded-Proto is believed, and which address the app treats as the
+    // caller's.
+    //
+    // This matters more than it looks. Without it the app sees only the
+    // proxy's address, so every request in the building shares one IP - the
+    // per-IP sign-in lockout then locks the whole company out as soon as one
+    // attacker sprays it, and every audit row names the proxy instead of the
+    // person.
+    //
+    // Plain addresses and CIDR both work, IPv4 and IPv6:
+    //   '10.0.0.7', '10.0.0.0/24', '::1', 'fd00::/8'
+    //
+    // LEAVING THIS EMPTY WITH behind_proxy ON trusts whatever machine
+    // connected, which is right only when nothing but the proxy can reach
+    // this port. List the proxy if anything else can.
+    'trusted_proxies' => [],
+
+    // A one-way door: a browser that has seen this refuses plain HTTP to this
+    // host until it expires. Leave at 0 until certificate renewal is proven.
+    // Only set hsts_subdomains if every subdomain of this host has TLS.
+    'hsts_seconds'    => 0,          // 31536000 (a year) once renewal is proven
+    'hsts_subdomains' => false,
+
+    // --- sessions ---
+
+    'session_idle_minutes' => 480,   // 8 hours, about a shift
+    'session_max_hours'    => 12,    // regardless of the 15-second polling
+
+    'log_limit' => 1000,             // rows from the history endpoint
+
+    // --- two-factor ---
+
+    // REQUIRED. 64 hex characters (openssl rand -hex 32). Encrypts stored
+    // authenticator keys and keys the recovery-code hashes.
+    //
+    // CHANGING IT INVALIDATES EVERY ENROLLED AUTHENTICATOR - everybody
+    // re-enrols at their next sign-in, and every unused recovery code stops
+    // working. Back it up with config.php, and treat losing it as locking the
+    // whole team out of their own authenticators.
+    //
+    // Every sign-in needs a code from an authenticator app after the
+    // password. There is no way to turn that off: an account with no
+    // authenticator is made to set one up before it can go any further.
+    'mfa_key' => '',
+
+    // What the authenticator app shows above the six digits. Usually the
+    // company or the system name; it appears next to the account's email.
+    'mfa_issuer' => 'Call Book',
+
+    // --- forgotten passwords ---
+
+    // Self-service reset, the "Forgotten your password?" link on the sign-in
+    // page. It needs mail_from below and a working MTA: with no way to send
+    // the link there is no way to prove the person owns the address, so the
+    // action refuses rather than pretending. Off leaves resets to a
+    // superadmin, as before.
+    'allow_password_reset' => false,
+
+    // How long a reset link stays good. Short on purpose - it is a password
+    // sitting in an inbox.
+    'reset_token_minutes' => 60,
+
+    // The address the reset link points at, with no trailing slash, e.g.
+    // 'https://callbook.example.com'. Blank builds it from the request, which
+    // is right on a plain server and wrong behind a proxy that rewrites the
+    // host - set it explicitly there.
+    'app_url' => '',
+
+    // --- notifications, used by bin/notify.php ---
+
+    // Both optional; blank skips that channel. teams_webhook comes from
+    // Teams -> channel -> Connectors -> Incoming Webhook. mail_from needs a
+    // working MTA, since PHP's mail() does not talk SMTP itself.
+    'teams_webhook' => '',
+    'mail_from'     => '',
+
+    'unanswered_minutes' => 30,      // before the unanswered job shouts
+];
+

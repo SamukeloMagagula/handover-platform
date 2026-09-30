@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Choose a new password - Call Book</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="assets/style.css">
+  <meta name="theme-color" content="#111214">
+</head>
+<body class="auth-page">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <h1 class="wordmark">
+        <span class="wm-name">CALL BOOK</span>
+        <span class="wm-rule" aria-hidden="true"></span>
+        <span class="wm-sub">ON-CALL ROSTER</span>
+      </h1>
+      <p class="auth-subheading">Choose a new password</p>
+    </div>
+
+    <div class="auth-body">
+      <div class="alert alert-success" id="auth-notice" hidden></div>
+      <div class="alert alert-error" id="auth-error" hidden></div>
+
+      <form class="auth-form" id="form-reset" hidden>
+        <label>New password
+          <input type="password" name="password" id="reg-password" placeholder="••••••••"
+                 autocomplete="new-password" minlength="10" required>
+        </label>
+        <ul class="pw-reqs" id="pw-reqs" aria-live="polite">
+          <li data-req="len">At least 10 characters</li>
+          <li data-req="upper">An uppercase letter</li>
+          <li data-req="lower">A lowercase letter</li>
+          <li data-req="number">A number</li>
+          <li data-req="special">A special character</li>
+        </ul>
+        <label>Confirm password
+          <input type="password" name="confirm" id="reg-confirm" placeholder="••••••••"
+                 autocomplete="new-password" minlength="10" required>
+        </label>
+        <p class="pw-match auth-hint" id="pw-match" hidden></p>
+        <button type="submit">Set the password</button>
+      </form>
+
+      <p class="auth-hint"><a href="login.html">Back to signing in</a></p>
+    </div>
+  </div>
+
+  <script src="assets/api.js"></script>
+  <script src="assets/reset.js"></script>
+</body>
+</html>

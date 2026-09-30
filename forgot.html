@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forgotten password - Call Book</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="assets/style.css">
+  <meta name="theme-color" content="#111214">
+</head>
+<body class="auth-page">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <h1 class="wordmark">
+        <span class="wm-name">CALL BOOK</span>
+        <span class="wm-rule" aria-hidden="true"></span>
+        <span class="wm-sub">ON-CALL ROSTER</span>
+      </h1>
+      <p class="auth-subheading">Forgotten password</p>
+    </div>
+
+    <div class="auth-body">
+      <div class="alert alert-success" id="auth-notice" hidden></div>
+      <div class="alert alert-error" id="auth-error" hidden></div>
+
+      <form class="auth-form" id="form-forgot">
+        <p>Enter the address you sign in with and we will send you a link to choose a
+           new password.</p>
+        <label>Email<input type="email" name="email" placeholder="you@example.com"
+                           autocomplete="username" required></label>
+        <button type="submit">Send the link</button>
+        <p class="auth-hint"><a href="login.html">Back to signing in</a></p>
+      </form>
+    </div>
+  </div>
+
+  <script src="assets/api.js"></script>
+  <script src="assets/forgot.js"></script>
+</body>
+</html>

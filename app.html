@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Call Book</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="assets/style.css">
+  <meta name="theme-color" content="#111214">
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to content</a>
+<div id="app-shell">
+  <header id="app-header">
+    <div class="brand-row">
+      <div class="brand-mark">
+        <h1 class="wordmark">
+          <span class="wm-name">CALL BOOK</span>
+          <span class="wm-rule" aria-hidden="true"></span>
+          <span class="wm-sub">ON-CALL ROSTER</span>
+        </h1>
+      </div>
+      <div class="header-user" id="header-user" hidden>
+        <span class="welcome">Hi, <strong id="header-user-name"></strong></span>
+        <button type="button" id="btn-password" class="btn-ghost-light">Password</button>
+        <button type="button" id="btn-signout" class="btn-ghost-light">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Kept outside #content so a re-render cannot wipe it, and so it is seen
+       whichever view is showing. -->
+  <div id="conn" class="conn" hidden role="alert">
+    <span class="conn-label" id="conn-label"></span>
+    <span id="conn-text"></span>
+    <button class="btn btn-small" type="button" id="conn-retry">Retry now</button>
+  </div>
+
+  <div id="app-body">
+    <nav id="sidebar" hidden></nav>
+    <main id="content" role="tabpanel" tabindex="-1">
+      <p class="text-muted">Loading&hellip;</p>
+    </main>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite" hidden></div>
+
+<dialog id="dlg"></dialog>
+
+<script src="assets/api.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

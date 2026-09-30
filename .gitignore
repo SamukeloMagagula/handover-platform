@@ -1,0 +1,5 @@
+config.php
+*.log
+
+# Local Claude Code settings — machine-specific, not part of the app.
+.claude/

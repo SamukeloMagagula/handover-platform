@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup - Call Book</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="assets/style.css">
+  <meta name="theme-color" content="#111214">
+</head>
+<body class="auth-page">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <h1 class="wordmark">
+        <span class="wm-name">CALL BOOK</span>
+        <span class="wm-rule" aria-hidden="true"></span>
+        <span class="wm-sub">ON-CALL ROSTER</span>
+      </h1>
+      <p class="auth-subheading">Create your account</p>
+    </div>
+
+    <div class="auth-body">
+      <div class="alert alert-success" id="done" hidden>
+        Account created. <a href="login.html">Sign in</a>.
+      </div>
+      <div class="alert alert-error" id="error" hidden></div>
+
+      <form class="auth-form" id="install-form">
+        <label>Your name<input type="text" id="name" autocomplete="name" required autofocus></label>
+        <label>Email<input type="email" id="email" placeholder="you@example.com" autocomplete="username" required></label>
+        <label>Password
+          <input type="password" id="password" placeholder="••••••••" autocomplete="new-password" minlength="10" required>
+        </label>
+        <ul class="pw-reqs" id="pw-reqs" aria-live="polite">
+          <li data-req="len">At least 10 characters</li>
+          <li data-req="upper">An uppercase letter</li>
+          <li data-req="lower">A lowercase letter</li>
+          <li data-req="number">A number</li>
+          <li data-req="special">A special character</li>
+        </ul>
+        <label>Confirm password
+          <input type="password" id="confirm" placeholder="••••••••" autocomplete="new-password" minlength="10" required>
+        </label>
+        <p class="pw-match auth-hint" id="pw-match" hidden></p>
+        <button type="submit" id="go">Create account</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="assets/api.js"></script>
+  <script src="assets/install.js"></script>
+</body>
+</html>

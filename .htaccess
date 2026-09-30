@@ -1,0 +1,79 @@
+# Apache. nginx ignores this entirely — the equivalent server block is in
+# DEPLOY.md, and you have to add it yourself.
+
+# ---------------------------------------------------------------- HTTPS
+# api.php redirects too, but the pages, the CSS and the JavaScript are static
+# files served by Apache without ever reaching PHP, so the redirect has to
+# live here as well.
+#
+# Comment this block out while testing on a server with no certificate.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Behind a TLS-terminating proxy, %{HTTPS} is off on every request; the
+    # second condition is what notices the proxy said otherwise.
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=302,L]
+</IfModule>
+
+# ---------------------------------------------------------------- headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "same-origin"
+    Header always set X-Frame-Options "DENY"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), interest-cohort=()"
+
+    # The pages are static files now, so PHP never runs for them and cannot
+    # set this per request. That turns out stricter rather than weaker: with
+    # no server-rendered inline script left to allow, script-src needs no
+    # nonce and nothing inline can execute at all.
+    #
+    # Styles still have to allow inline: the roster sets a site's colour with
+    # a style attribute in a hundred places, and CSP does not tell those apart
+    # from a stylesheet.
+    #
+    # No font CDN is listed: the pages use the system font stack and load
+    # nothing from outside this origin.
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'"
+
+    # A year. Only sent over HTTPS: a browser that has seen this will refuse
+    # plain HTTP to this host until it expires, so do not send it from a
+    # server whose certificate is not yet reliable.
+    Header always set Strict-Transport-Security "max-age=31536000" "expr=%{HTTPS} == 'on'"
+
+    # The session cookie is set by PHP with its own flags; this is a backstop
+    # for anything else that might set one.
+    Header always edit Set-Cookie ^(.*)$ "$1; HttpOnly; Secure" "expr=%{HTTPS} == 'on' && %{RESPONSE_STATUS} < 400"
+</IfModule>
+
+# ------------------------------------------------------------- the library
+# config.php holds the database password. The rest are includes, not
+# endpoints: api.php is the only PHP file the browser has any business
+# fetching. Denied here so that even if PHP is misconfigured and stops
+# executing .php files, none of them is served as text.
+<FilesMatch "^(config|db|auth|mfa|hub|helpers|validation)\.php$">
+    Require all denied
+</FilesMatch>
+
+# The sample is safe by design, but there is no reason to serve it either.
+<Files "config.php.example">
+    Require all denied
+</Files>
+
+# ------------------------------------------------------------------ misc
+Options -Indexes
+
+# Nothing outside the app should be fetchable.
+<FilesMatch "\.(md|sql|json|log)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_authz_core.c>
+    <Files ".htaccess">
+        Require all denied
+    </Files>
+</IfModule>
+
+# The command-line scripts are not endpoints.
+RedirectMatch 404 ^/bin/
